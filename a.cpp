@@ -25,7 +25,7 @@ void third_task() {
 
 void fifth_task() {
 	std::cout << "FIFTH TASK\n";
-	#pragma omp parallel num_threads(2)
+	#pragma omp parallel num_threads(1 << 14)
 	{
 		#pragma omp single
 		{
@@ -34,12 +34,13 @@ void fifth_task() {
 
 		#pragma omp barrier
 
-		std::cout << "Hello world" << std::endl;
+		//std::cout << "Hello world" << std::endl;
 	}
 	std::cout << '\n';
 }
 
 int main() {
+	std::cout << "Max threads: " << omp_get_max_threads() << std::endl << std::endl;
 	first_task();
 	third_task();
 	fifth_task();
