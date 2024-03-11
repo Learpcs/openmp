@@ -45,6 +45,7 @@ void fifth_task() {
 
 	#pragma omp parallel private(x) 
 	{
+		#pragma omp master
 		if (!omp_get_thread_num()) {
 			++x;
 		}
