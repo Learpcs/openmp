@@ -2,9 +2,6 @@
 #include <omp.h>
 #include <string>
 
-void f() {
-}
-
 void first_task() {
 	std::cout << "FIRST TASK\n";
 	auto f = []() {
@@ -27,14 +24,13 @@ void third_task() {
 	std::cout << "THIRD TASK\n";
 	#pragma omp parallel
 	{
-		#pragma omp single
+		#pragma omp single nowait
 		{
 			std::cout << "Amount of threads: " << omp_get_num_threads() << std::endl;
 		}
 
-		#pragma omp barrier
+		std::cout << omp_get_thread_num() << std::endl;
 
-		std::cout << "Hello world" << std::endl;
 	}
 	std::cout << '\n';
 }
