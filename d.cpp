@@ -1,68 +1,59 @@
 #include <iostream>
 #include <omp.h>
 #include <string>
+#include <Windows.h>
 
 long long sum = 0;
 
-#pragma omp threadprivate (sum)
-
 void first_task() {
 	std::cout << "FIRST TASK\n";
-	std::cout << "Is dynamic: " << omp_get_dynamic() << '\n';
+	 #pragma omp parallel
+    {
+        int thread_id = omp_get_thread_num();
+        std::cout << "Message from thread " << thread_id << " before barrier" << std::endl;
 
-	const int UP = int(1e3);
+        #pragma omp barrier
 
-	#pragma omp parallel
-	{
-		for (int i = 0; i < UP; i += omp_get_thread_num() + 1) {
-			sum += i;	
-		}
-
-		std::cout << omp_get_num_threads() << ' ' << sum << '\n';
-	}
-
-	std::cout << "OK" << std::endl;
-
-	#pragma omp parallel
-	{
-		for (int i = 0; i < UP; i += omp_get_thread_num() + 1) {
-			sum -= i;	
-		}
-
-		#pragma omp barrier
-
-		std::cout << omp_get_thread_num() << ' ' << omp_get_num_threads() << ' ' << sum << '\n';
-	}
-
+        std::cout << "Message from thread " << thread_id << " after barrier" << std::endl;
+    }
 }
 
 void third_task() {
 	std::cout << "THIRD TASK\n";
-	int x = -1;
-	#pragma omp parallel
-	{
-		#pragma omp critical
-		{
-			std::cout << "BEFORE: " << x << std::endl;
-			x = omp_get_thread_num();
-			std::cout << "AFTER: " << x << std::endl;
-		}
+	int global_var;
+	#pragma omp parallel private(global_var)
+    {
+        int thread_id = omp_get_thread_num();
 
-	}
-	std::cout << '\n';
+        #pragma omp critical
+        {
+            global_var = thread_id;  // Critical section to update the global variable
+            std::cout << "Thread " << thread_id << " set global_var to " << global_var << std::endl;
+        }
+    }
 }
 
 #include <windows.h>
 
 void fifth_task() {
-	std::cout << "FIFTH TASK\n";
 
-	#pragma omp parallel for schedule(static, 10) 	
-	for (int i = 0; i < 21; i++)
-	{
-		Sleep(100);
-		printf("Thread %d is running number %d\n", omp_get_thread_num(), i);
-	}
+	omp_lock_t lock;
+    omp_init_lock(&lock);
+
+    #pragma omp parallel
+    {
+        int thread_id = omp_get_thread_num();
+
+        omp_set_lock(&lock);
+        // Critical section starts
+        std::cout << "Thread " << thread_id << " is starting its work" << std::endl;
+        Sleep(100); // Simulate some work
+        std::cout << "Thread " << thread_id << " has finished its work" << std::endl;
+        // Critical section ends
+        omp_unset_lock(&lock);
+    }
+
+    omp_destroy_lock(&lock);
 }
 
 int main() {
